@@ -51,18 +51,8 @@ for line in src.split("\n"):
   if "<title>" in line:
     name = line
   if "var " + key in line:
-    l = line
+    fileUrl = "".join(re.findall(r'"([^"]*)"', line))
     break
-
-ss = ""
-grab = False
-for c in l:
-  if c == '"':
-    grab = not grab
-  if grab:
-    ss = ss + c
-
-ss = ss.replace('"', "")
 
 m = re.search("<title>([^<]*)</title>", name)
 name = m.group(1)
@@ -72,7 +62,7 @@ name = name.replace("..", "_")
 
 print("File: " + name + ".mp3")
 
-f = urlOpen(ss)
+f = urlOpen(fileUrl)
 length = int(f.info()["Content-Length"])
 
 f2 = open(name + ".mp3", "wb")
