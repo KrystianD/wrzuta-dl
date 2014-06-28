@@ -1,11 +1,31 @@
 #!/usr/bin/python
-import urllib.request, urllib.error, urllib.parse, re, sys, select, socket
+import re, sys, select, socket
 
 if len(sys.argv) != 2:
   print("Usage: {0} url".format(sys.argv[0]))
   exit(1)
 
 baseUrl = sys.argv[1]
+
+def urlOpen(url):
+  try:
+    import urllib.request, urllib.error, urllib.parse
+    src = urllib.request.urlopen(url)
+    return src
+  except:
+    try:
+      import urllib2
+      return urllib2.urlopen(url)
+    except:
+      return None
+def download(url):
+  f = urlOpen(url)
+  src = f.read()
+  try:
+    src = str(src, encoding = "utf-8")
+  except:
+    pass
+  return src
 
 m = re.match("^http://(.*?).wrzuta.pl/audio/(.*?)/", baseUrl)
 if not m:
@@ -16,9 +36,7 @@ user = m.group(1)
 key = m.group(2)
 
 url = "http://"+user+".wrzuta.pl/u/"+key
-src = urllib.request.urlopen(url).read()
-
-src = str(src, encoding = "utf-8")
+src = download(url)
 
 m = re.search("'flashSrc', encodeURIComponent\(([a-zA-Z]*)\)\);", src)
 if m is None:
@@ -54,7 +72,7 @@ name = name.replace("..", "_")
 
 print("File: " + name + ".mp3")
 
-f = urllib.request.urlopen(ss)
+f = urlOpen(ss)
 length = int(f.info()["Content-Length"])
 
 f2 = open(name + ".mp3", "wb")
@@ -65,7 +83,7 @@ while True:
   if not buf:
     break
   read += len(buf)
-  print("{0:7.2f} of {1:7.2f} KB {2:4.0%}".format(read / 1024, length / 1024, read / length))
+  print("{0:7.2f} of {1:7.2f} KB {2:4.0%}".format(read / 1024, length / 1024, read / float(length)))
   f2.write(buf)
 
 f.close()
